@@ -10,7 +10,7 @@ import (
 type NatsMessageHandler func(*nats.Msg)
 
 type NatsListener struct {
-	handler NatsMessageHandler
+	Handler NatsMessageHandler
 }
 
 //goland:noinspection GoUnusedExportedFunction
@@ -37,7 +37,7 @@ func StartNatsListener(queueName string, function *NatsListener) *nats.Conn {
 		log.Printf("[NatsListener] Error connecting to NATS: %v", err)
 		return nil
 	}
-	if _, err = nc.Subscribe(queueName, func(msg *nats.Msg) { function.handler(msg) }); err != nil {
+	if _, err = nc.Subscribe(queueName, func(msg *nats.Msg) { function.Handler(msg) }); err != nil {
 		log.Printf("[NatsListener] Error subscribing to NATS queue: %v", err)
 		return nil
 	}
