@@ -1,4 +1,4 @@
-package kino_cat_core_go
+package nats_helper
 
 import (
 	"fmt"
