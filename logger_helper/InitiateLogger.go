@@ -16,9 +16,9 @@ func SoftPrepareLogFile() *os.File {
 }
 
 func SoftLogClose(logFile *os.File) {
-	if logFile != nil {
-		if err := logFile.Close(); err != nil {
-			log.Println("Помилка при спробі закрити лог файл: %v", err)
-		}
+	if logFile == nil {
+		log.Println("Лог файлу не існує")
+	} else if err := logFile.Close(); err != nil {
+		log.Println("Помилка при спробі закрити лог файл: %v", err)
 	}
 }
