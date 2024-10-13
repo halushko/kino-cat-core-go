@@ -5,18 +5,20 @@ import (
 	"os"
 )
 
-func PrepareLogFile() (*os.File, error) {
+func SoftPrepareLogFile() *os.File {
 	logFile, err := os.OpenFile("logs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {
 		log.Println("Помилка при спробі відкрити лог файл: %v", err)
-		return nil, err
+		return nil
 	}
 	log.SetOutput(logFile)
-	return logFile, nil
+	return logFile
 }
 
 func SoftLogClose(logFile *os.File) {
-	if err := logFile.Close(); err != nil {
-		log.Println("Помилка при спробі закрити лог файл: %v", err)
+	if logFile != nil {
+		if err := logFile.Close(); err != nil {
+			log.Println("Помилка при спробі закрити лог файл: %v", err)
+		}
 	}
 }
