@@ -6,7 +6,7 @@ import (
 )
 
 func SoftPrepareLogFile() *os.File {
-	logFile, err := os.OpenFile("logs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+	logFile, err := os.OpenFile("logs/logs.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
 	if err != nil {
 		log.Println("Помилка при спробі відкрити лог файл: %v", err)
 		return nil
