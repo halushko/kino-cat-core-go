@@ -5,6 +5,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"log"
 	"os"
+	"time"
 )
 
 type NatsMessageHandler func(*nats.Msg)
@@ -59,10 +60,14 @@ func connect() (*nats.Conn, error) {
 	port := os.Getenv("BROKER_PORT")
 	natsUrl := fmt.Sprintf("nats://%s:%s", ip, port)
 
-	nc, err := nats.Connect(natsUrl)
-	if err != nil {
-		log.Printf("[NatsListener] Error connecting to NATS : %v", err)
-		return nil, fmt.Errorf("[NatsListener] Unable to connect to NATS")
+	for i := 0; i < 5; i++ {
+		nc, err := nats.Connect(natsUrl)
+		if err != nil {
+			log.Printf("[NatsListener] Error connecting to NATS (%d try): %v", i+1, err)
+			time.Sleep(3 * time.Second)
+			continue
+		}
+		return nc, nil
 	}
-	return nc, nil
+	return nil, fmt.Errorf("[NatsListener] Unable to connect to NATS")
 }
