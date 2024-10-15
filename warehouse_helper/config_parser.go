@@ -36,3 +36,14 @@ func ParseWarehouseConfig() (map[string]WarehouseConfig, error) {
 		return nil, err
 	}
 }
+
+func CopyWarehouses(Warehouses map[string]any) {
+	if ws, err := ParseWarehouseConfig(); err != nil {
+		log.Printf("Error parsing warehouse config: %v", err)
+		return
+	} else {
+		for key, value := range ws {
+			Warehouses[key] = value
+		}
+	}
+}
