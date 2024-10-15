@@ -14,8 +14,7 @@ type WarehouseConfig struct {
 
 const filePath = "config/warehouse.json"
 
-//goland:noinspection GoUnusedExportedFunction
-func ParseWarehouseConfig() (map[string]WarehouseConfig, error) {
+func parseWarehouseConfig() (map[string]WarehouseConfig, error) {
 	if data, err := os.ReadFile(filePath); err == nil {
 		var warehouses []WarehouseConfig
 		if err = json.Unmarshal(data, &warehouses); err != nil {
@@ -37,8 +36,9 @@ func ParseWarehouseConfig() (map[string]WarehouseConfig, error) {
 	}
 }
 
-func CopyWarehouses(Warehouses map[string]any) {
-	if ws, err := ParseWarehouseConfig(); err != nil {
+//goland:noinspection GoUnusedExportedFunction
+func CopyWarehouses(Warehouses map[string]WarehouseConfig) {
+	if ws, err := parseWarehouseConfig(); err != nil {
 		log.Printf("Error parsing warehouse config: %v", err)
 		return
 	} else {
