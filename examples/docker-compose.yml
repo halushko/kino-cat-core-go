@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  bot:
+    image: halushko/kino-cat-bot-go:beta-latest
+    container_name: kino-cat-bot-go
+    environment:
+      - BOT_TOKEN=<Telegram bot token here>
+      - BROKER_IP=10.10.127.5
+      - BROKER_PORT=4222
+    volumes:
+      - ./logs/bot:/root/logs
+    depends_on:
+      - nats
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.3
+  text:
+    image: halushko/kino-cat-text-go:beta-latest
+    container_name: kino-cat-text-go
+    environment:
+      - BROKER_IP=10.10.127.5
+      - BROKER_PORT=4222
+    volumes:
+      - ./logs/text:/root/logs
+    depends_on:
+      - nats
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.4
+  torrent:
+    image: halushko/kino-cat-torrent-go:beta-latest
+    container_name: kino-cat-torrent-go
+    environment:
+      - BROKER_IP=10.10.127.5
+      - BROKER_PORT=4222
+      - TORRENT_IP=10.10.127.7
+      - TORRENT_PORT=9091
+    volumes:
+      - ./logs/torrent:/root/logs
+      - ./config/servers/:/root/config
+    depends_on:
+      - nats
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.6
+  nats:
+    image: nats:latest
+    container_name: nats-server
+    environment:
+      - NATS_JS_STORE_DIR=/data/jetstream
+    volumes:
+      - ./nats_data:/data
+    ports:
+      - 4222:4222
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.5
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    container_name: "transmission"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    depends_on:
+      - bot
+    volumes:
+      - ./workdir/config/transmission:/config
+      - ./workdir/mediadata_main:/downloads/complete
+      - ./workdir/config/files_from_telegram_main:/watch
+    ports:
+      - 9091:9091
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.7
+networks:
+  go-cat_private_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.10.127.0/17
