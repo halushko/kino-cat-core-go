@@ -27,7 +27,7 @@ type natsBotFile struct {
 	MimeType string `json:"mime_type"`
 }
 
-type NatsListenerHandlerFunction func()
+type NatsListenerHandlerFunction func(data []byte)
 
 type NatsListenerHandler struct {
 	Function NatsListenerHandlerFunction
@@ -156,7 +156,7 @@ func StartNatsListener(queue string, handler *NatsListenerHandler) error {
 		log.Printf("[StartNatsListener] Помилка під'єднання до NATS (черга \"%s\"): %v", err, queue)
 		return nil
 	}
-	if _, err = nc.Subscribe(queue, func(msg *nats.Msg) { handler.Function() }); err != nil {
+	if _, err = nc.Subscribe(queue, func(msg *nats.Msg) { handler.Function(msg.Data) }); err != nil {
 		log.Printf("[StartNatsListener] Помилка підписки до черги \"%s\" в NATS: %v", queue, err)
 		return err
 	}
