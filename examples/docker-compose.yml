@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   bot:
     image: halushko/kino-cat-bot-go:beta-latest
     container_name: kino-cat-bot-go
     environment:
       - BOT_TOKEN=6953522453:AAHF5bZd6BEwTPKoFohdjA7bRKkQQajcUog
-      - BROKER_IP=10.10.127.5
+      - BROKER_IP=10.10.127.55
       - BROKER_PORT=4222
     volumes:
       - ./logs/bot:/root/logs
@@ -14,12 +12,12 @@ services:
       - nats
     networks:
       go-cat_private_network:
-        ipv4_address: 10.10.127.3
+        ipv4_address: 10.10.127.11
   text:
     image: halushko/kino-cat-text-go:beta-latest
     container_name: kino-cat-text-go
     environment:
-      - BROKER_IP=10.10.127.5
+      - BROKER_IP=10.10.127.55
       - BROKER_PORT=4222
     volumes:
       - ./logs/text:/root/logs
@@ -27,14 +25,30 @@ services:
       - nats
     networks:
       go-cat_private_network:
-        ipv4_address: 10.10.127.4
+        ipv4_address: 10.10.127.12
+  file:
+    image: halushko/kino-cat-file-go:beta-latest
+    container_name: kino-cat-file-go
+    environment:
+      - BROKER_IP=10.10.127.55
+      - BROKER_PORT=4222
+      - BOT_TOKEN=6953522453:AAHF5bZd6BEwTPKoFohdjA7bRKkQQajcUog
+    volumes:
+      - ./logs/file:/root/logs
+      - ./workdir/torrents_to_processed:/root/torrents_to_processed
+      - ./workdir/config/files_from_telegram_main:/root/torrents_to_download
+    depends_on:
+      - nats
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.13
   torrent:
     image: halushko/kino-cat-torrent-go:beta-latest
     container_name: kino-cat-torrent-go
     environment:
-      - BROKER_IP=10.10.127.5
+      - BROKER_IP=10.10.127.55
       - BROKER_PORT=4222
-      - TORRENT_IP=10.10.127.7
+      - TORRENT_IP=10.10.127.77
       - TORRENT_PORT=9091
     volumes:
       - ./logs/torrent:/root/logs
@@ -43,7 +57,7 @@ services:
       - nats
     networks:
       go-cat_private_network:
-        ipv4_address: 10.10.127.6
+        ipv4_address: 10.10.127.14
   nats:
     image: nats:latest
     container_name: nats-server
@@ -55,7 +69,7 @@ services:
       - 4222:4222
     networks:
       go-cat_private_network:
-        ipv4_address: 10.10.127.5
+        ipv4_address: 10.10.127.55
   transmission:
     image: lscr.io/linuxserver/transmission:latest
     container_name: "transmission"
@@ -73,10 +87,10 @@ services:
       - 9091:9091
     networks:
       go-cat_private_network:
-        ipv4_address: 10.10.127.7
+        ipv4_address: 10.10.127.77
 networks:
   go-cat_private_network:
     driver: bridge
     ipam:
       config:
-        - subnet: 10.10.127.0/17
+        - subnet: 10.10.0.0/16
