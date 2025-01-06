@@ -25,6 +25,7 @@ type natsBotFile struct {
 	FileName string `json:"file_name"`
 	Size     int64  `json:"size"`
 	MimeType string `json:"mime_type"`
+	URL      string `json:"url"`
 }
 
 type NatsListenerHandlerFunction func(data []byte)
@@ -78,13 +79,14 @@ func PublishCommandMessage(queue string, userId int64, message []string) error {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName string, fileSize int64, mimeType string) error {
+func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName string, fileSize int64, mimeType string, url string) error {
 	msg := natsBotFile{
 		UserId:   userId,
 		FileId:   fileId,
 		FileName: fileName,
 		Size:     fileSize,
 		MimeType: mimeType,
+		URL:      url,
 	}
 
 	jsonData, err := json.Marshal(msg)
@@ -133,7 +135,7 @@ func ParseNatsBotCommand(data []byte) (int64, []string, error) {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func ParseNatsBotFile(data []byte) (int64, string, string, int64, string, error) {
+func ParseNatsBotFile(data []byte) (int64, string, string, int64, string, string, error) {
 	var msg natsBotFile
 	if err := json.Unmarshal(data, &msg); err == nil {
 		userId := msg.UserId
@@ -141,11 +143,12 @@ func ParseNatsBotFile(data []byte) (int64, string, string, int64, string, error)
 		fileName := msg.FileName
 		size := msg.Size
 		mimeType := msg.MimeType
+		fileUrl := msg.URL
 		log.Printf("[ParseNatsBotFile] Отримано файл \"%s\" для користувача %d", fileName, userId)
-		return userId, fileId, fileName, size, mimeType, nil
+		return userId, fileId, fileName, size, mimeType, fileUrl, nil
 	} else {
 		log.Printf("[ParseNatsBotFile] Помилка при розборі повідомлення з NATS: %v", err)
-		return 0, "", "", 0, "", err
+		return 0, "", "", 0, "", "", err
 	}
 }
 

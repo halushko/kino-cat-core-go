@@ -35,7 +35,7 @@ services:
       - BOT_TOKEN=6953522453:AAHF5bZd6BEwTPKoFohdjA7bRKkQQajcUog
     volumes:
       - ./logs/file:/root/logs
-      - ./workdir/torrents_to_processed:/root/torrents_to_processed
+      - ./workdir/torrents_to_processed:/root/torrents_to_process
       - ./workdir/config/files_from_telegram_main:/root/torrents_to_download
     depends_on:
       - nats
