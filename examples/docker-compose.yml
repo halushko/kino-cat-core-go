@@ -37,6 +37,7 @@ services:
       - ./logs/file:/root/logs
       - ./workdir/torrents_to_processed:/root/torrents_to_process
       - ./workdir/config/files_from_telegram_main:/root/torrents_to_download
+      - ./workdir/config/files_db:/data
     depends_on:
       - nats
     networks:

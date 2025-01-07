@@ -35,7 +35,7 @@ type NatsListenerHandler struct {
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func PublishTextMessage(queue string, userId int64, text string) error {
+func PublishTextMessage(queue string, userId int64, text string) {
 	msg := natsBotText{
 		UserId: userId,
 		Text:   text,
@@ -44,20 +44,39 @@ func PublishTextMessage(queue string, userId int64, text string) error {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("[PublishTextMessage] Помилка: %s", err)
-		return err
+		return
 	}
 
 	if err = publishMessageToNats(queue, jsonData); err == nil {
 		log.Printf("[PublishToNATS] Повідомлення надіслано в чергу \"%s\" NATS", queue)
-		return nil
-	} else {
-		log.Printf("[PublishToNATS] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
-		return err
+		return
 	}
+	log.Printf("[PublishToNATS] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func PublishCommandMessage(queue string, userId int64, message []string) error {
+func SendMessageToUser(userId int64, text string) {
+	msg := natsBotText{
+		UserId: userId,
+		Text:   text,
+	}
+
+	jsonData, err := json.Marshal(msg)
+	if err != nil {
+		log.Printf("[PublishTextMessage] Помилка: %s", err)
+		return
+	}
+	queue := "TELEGRAM_OUTPUT_TEXT_QUEUE"
+	if err = publishMessageToNats(queue, jsonData); err == nil {
+		log.Printf("[PublishToNATS] Повідомлення надіслано в чергу \"%s\" NATS", queue)
+		return
+	}
+
+	log.Printf("[PublishToNATS] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
+}
+
+//goland:noinspection GoUnusedExportedFunction
+func PublishCommandMessage(queue string, userId int64, message []string) {
 	msg := natsBotCommand{
 		UserId:    userId,
 		Arguments: message,
@@ -66,20 +85,18 @@ func PublishCommandMessage(queue string, userId int64, message []string) error {
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("[PublishCommandMessage] Помилка: %s", err)
-		return err
+		return
 	}
 
 	if err = publishMessageToNats(queue, jsonData); err == nil {
 		log.Printf("[PublishCommandMessage] Повідомлення надіслано в чергу \"%s\" NATS", queue)
-		return nil
-	} else {
-		log.Printf("[PublishCommandMessage] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
-		return err
+		return
 	}
+	log.Printf("[PublishCommandMessage] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
 }
 
 //goland:noinspection GoUnusedExportedFunction
-func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName string, fileSize int64, mimeType string, url string) error {
+func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName string, fileSize int64, mimeType string, url string) {
 	msg := natsBotFile{
 		UserId:   userId,
 		FileId:   fileId,
@@ -92,16 +109,14 @@ func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName 
 	jsonData, err := json.Marshal(msg)
 	if err != nil {
 		log.Printf("[PublishFileInfoMessage] Помилка: %s", err)
-		return err
+		return
 	}
 
-	if err = publishMessageToNats(queue, jsonData); err == nil {
-		log.Printf("[PublishFileInfoMessage] Повідомлення надіслано в чергу \"%s\" NATS", queue)
-		return nil
-	} else {
+	if err = publishMessageToNats(queue, jsonData); err != nil {
 		log.Printf("[PublishFileInfoMessage] Помилка публікації в чергу \"%s\" NATS: %v", queue, err)
-		return err
+		return
 	}
+	log.Printf("[PublishFileInfoMessage] Повідомлення надіслано в чергу \"%s\" NATS", queue)
 }
 
 //goland:noinspection GoUnusedExportedFunction
@@ -109,14 +124,14 @@ func PublishFileInfoMessage(queue string, userId int64, fileId string, fileName 
 //goland:noinspection GoUnusedExportedFunction
 func ParseNatsBotText(data []byte) (int64, string, error) {
 	var msg natsBotText
-	if err := json.Unmarshal(data, &msg); err == nil {
+	if err := json.Unmarshal(data, &msg); err != nil {
+		log.Printf("[ParseNatsBotText] Помилка при розборі повідомлення з NATS: %v", err)
+		return 0, "", err
+	} else {
 		userId := msg.UserId
 		text := msg.Text
 		log.Printf("[ParseNatsBotText] Отримано текст \"%s\" для користувача %d", text, userId)
 		return userId, text, nil
-	} else {
-		log.Printf("[ParseNatsBotText] Помилка при розборі повідомлення з NATS: %v", err)
-		return 0, "", err
 	}
 }
 
@@ -137,7 +152,10 @@ func ParseNatsBotCommand(data []byte) (int64, []string, error) {
 //goland:noinspection GoUnusedExportedFunction
 func ParseNatsBotFile(data []byte) (int64, string, string, int64, string, string, error) {
 	var msg natsBotFile
-	if err := json.Unmarshal(data, &msg); err == nil {
+	if err := json.Unmarshal(data, &msg); err != nil {
+		log.Printf("[ParseNatsBotFile] Помилка при розборі повідомлення з NATS: %v", err)
+		return 0, "", "", 0, "", "", err
+	} else {
 		userId := msg.UserId
 		fileId := msg.FileId
 		fileName := msg.FileName
@@ -146,9 +164,6 @@ func ParseNatsBotFile(data []byte) (int64, string, string, int64, string, string
 		fileUrl := msg.URL
 		log.Printf("[ParseNatsBotFile] Отримано файл \"%s\" для користувача %d", fileName, userId)
 		return userId, fileId, fileName, size, mimeType, fileUrl, nil
-	} else {
-		log.Printf("[ParseNatsBotFile] Помилка при розборі повідомлення з NATS: %v", err)
-		return 0, "", "", 0, "", "", err
 	}
 }
 
