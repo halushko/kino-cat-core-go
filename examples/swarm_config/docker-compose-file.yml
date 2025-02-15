@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  file:
+    image: halushko/kino-cat-file-go:beta-latest
+    environment:
+      - BROKER_IP=nats
+      - BROKER_PORT=4222
+    volumes:
+      - /home/dima/media-go/workdir/logs/file:/root/logs
+      - /home/dima/media-go/workdir/torrents_to_processed:/root/torrents_to_process
+      - /home/dima/media-go/workdir/config/files_from_telegram_main:/root/torrents_to_download
+      - /home/dima/media-go/workdir/config/files_db:/data
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+      placement:
+        constraints:
+          - "node.role == manager"
+    networks:
+      - go_cat_network
+
+networks:
+  go_cat_network:
+    external: true

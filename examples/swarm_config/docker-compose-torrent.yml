@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  bot:
+    image: halushko/kino-cat-torrent-go:beta-latest
+    environment:
+      - BOT_TOKEN=6953522453:AAHF5bZd6BEwTPKoFohdjA7bRKkQQajcUog
+      - BROKER_IP=nats
+      - BROKER_PORT=4222
+      - TORRENT_IP=nats
+      - TORRENT_PORT=9091
+    volumes:
+      - /home/dima/media-go/workdir/logs/torrent:/root/logs
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+      placement:
+        constraints:
+          - "node.role == manager"
+    networks:
+      - go_cat_network
+
+networks:
+  go_cat_network:
+    external: true

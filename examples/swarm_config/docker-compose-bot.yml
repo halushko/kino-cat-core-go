@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  bot:
+    image: halushko/kino-cat-bot-go:beta-latest
+    environment:
+      - BOT_TOKEN=6953522453:AAHF5bZd6BEwTPKoFohdjA7bRKkQQajcUog
+      - BROKER_IP=nats
+      - BROKER_PORT=4222
+    volumes:
+      - /home/dima/media-go/workdir/logs/bot:/root/logs
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+      placement:
+        constraints:
+          - "node.role == manager"
+    networks:
+      - torrent_network
+
+networks:
+  go_cat_network:
+    external: true

@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  nats:
+    image: nats:latest
+    environment:
+      - NATS_JS_STORE_DIR=/data/jetstream
+    volumes:
+      - nats_data:/data
+    networks:
+      - nats_network
+    ports:
+      - target: 4222
+        published: 4224
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - "node.role == manager"
+
+networks:
+  nats_network:
+    driver: overlay
+
+volumes:
+  nats_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/dima/media-go/workdir/nats_data
+      o: bind

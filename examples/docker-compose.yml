@@ -78,17 +78,33 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-    depends_on:
-      - bot
     volumes:
       - ./workdir/config/transmission:/config
       - ./workdir/mediadata_main:/downloads/complete
+      - ./workdir/mediadata_main:/downloads/incomplete
+      - ./workdir/mediadata_backlog:/downloads/backlog
       - ./workdir/config/files_from_telegram_main:/watch
     ports:
       - 9091:9091
     networks:
       go-cat_private_network:
         ipv4_address: 10.10.127.77
+  media:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: "media"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - VERSION=docker
+    volumes:
+      - ./workdir/config/plex/config:/config
+      - ./workdir/mediadata_main:/movies/1
+      - ./workdir/mediadata_backlog:/movies/2
+    restart: always
+    networks:
+      go-cat_private_network:
+        ipv4_address: 10.10.127.88
 networks:
   go-cat_private_network:
     driver: bridge
