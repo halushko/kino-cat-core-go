@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  transmission:
+    image: lscr.io/linuxserver/transmission:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /home/dima/media-go/workdir/config/transmission:/config
+      - /home/dima/media-go/workdir/mediadata_main:/downloads/complete
+      - /home/dima/media-go/workdir/mediadata_main:/downloads/incomplete
+      - /home/dima/media-go/workdir/config/files_from_telegram_main:/watch
+      - /home/dima/media/workdir/mediadata_hdd/low_quality:/downloads/backlog
+      - /home/dima/media/workdir/mediadata_hdd/low_quality:/downloads/low
+    ports:
+      - target: 9091
+        published: 9093
+        mode: host
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 1s
+        max_attempts: 5
+      placement:
+        constraints:
+          - "node.role == manager"
+    networks:
+      - go_cat_network
+
+networks:
+  go_cat_network:
+    external: true
